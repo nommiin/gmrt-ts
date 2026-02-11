@@ -1,0 +1,33 @@
+{
+  "name": "gmrt-ts",
+  "version": "1.0.1",
+  "author": "nommiin",
+  "description": "A toolkit for using TypeScript with GMRT",
+  "keywords": [
+    "gamemaker",
+    "gmrt",
+    "bun",
+    "bun.js",
+    "typescript",
+    "ts"
+  ],
+  "os": [
+    "win32"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nommiin/gmrt-ts.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "type": "module",
+  "module": "index.ts",
+  "scripts": {
+    "start": "bun index.ts"
+  }
+}
