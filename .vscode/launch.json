@@ -8,8 +8,7 @@
             "type": "bun",
             "request": "launch",
             "name": "Run gmts",
-            "program": "index.ts",
-            "args": []
+            "program": "index.ts"
         },
         {
             "type": "bun",
