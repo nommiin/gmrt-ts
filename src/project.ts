@@ -22,10 +22,16 @@ class GameMakerResource {
         this.data = data;
     }
 
-    public async save(path: string, root: string): Promise<boolean> {
+    public async load(path: string, root: string) {
         // stub, replaced by anything that needs to write files
         // (ie: scripts, creation code, events.. anything that isn't the .yy file)
-        return true;
+        return this;
+    }
+
+    public async save(path: string, root: string) {
+        // stub, replaced by anything that needs to write files
+        // (ie: scripts, creation code, events.. anything that isn't the .yy file)
+        return this;
     }
 }
 
@@ -34,47 +40,48 @@ class GameMakerRoom extends GameMakerResource {
     public creation_code?: string;
     constructor(project: GameMakerProject, data: GMRoom) {
         super({...GMRoom_factory(project.name, data.name), ...data});
-
-        // note: as mentioned below, wanna use async for this
-        const root = project.root;
-        if (root != "" && this.data.creationCodeFile != "") {
-            const file = join(root, this.data.creationCodeFile);
-            if (!existsSync(file)) {
-                throw new Error(`could not load room, creation code file does not exist: ${file}`);
-            }
-            this.creation_code = readFileSync(file, "utf-8");
-        }
     }
 
-    public override async save(path: string, root: string): Promise<boolean> {
+    public override async load(path: string, root: string) {
+        if (this.data.creationCodeFile != "") {
+            const file = Bun.file(join(root, this.data.creationCodeFile));
+            if (!await file.exists()) {
+                throw new Error(`could not load room, creation code file does not exist: ${file}`);
+            }
+            this.creation_code = await file.text();
+        }
+        return this;
+    }
+
+    public override async save(path: string, root: string) {
         if (this.creation_code) {
             await Bun.write(join(root, this.data.creationCodeFile), this.creation_code);
         }
-        return true;
+        return this;
     }
 }
 
 class GameMakerScript extends GameMakerResource {
     public declare data: GMScript;
     public script_code?: string;
-    constructor(project: GameMakerProject, path: string, data: GMScript) {
+    constructor(project: GameMakerProject, data: GMScript) {
         super({...GMScript_factory(project.name, data.name), ...data});
-
-        // note: this isn't great, ideally want to avoid sync IO and just use native bun offering; will need to be moved out of constructor
-        if (project.root != "") {
-            const file = join(dirname(path), (this.data?.scriptSource ?? `${this.data.name}.gml`));
-            if (existsSync(file)) {
-                this.script_code = readFileSync(file, "utf-8");
-            }
-        }
     }
 
-    public override async save(path: string): Promise<boolean> {
+    public override async load(path: string) {
+        const file = Bun.file(join(dirname(path), this.data?.scriptSource ?? `${this.data.name}.gml`));
+        if (await file.exists()) {
+            this.script_code = await file.text();
+        }
+        return this;
+    }
+
+    public override async save(path: string) {
         if (this.script_code) {
             const file = join(path, (this.data?.scriptSource ?? `${this.data.name}.gml`));
             await Bun.write(file, this.script_code);
         }
-        return true;
+        return this;
     }
 }
 
@@ -132,12 +139,12 @@ export class GameMakerProject {
         const content = JSON5.parse(await file.text()) as GMResource;
         switch (content.resourceType) {
             case "GMRoom": {
-                this.resources.set(name, new GameMakerRoom(this, content as GMRoom));
+                this.resources.set(name, await new GameMakerRoom(this, content as GMRoom).load(path, this.root));
                 break;
             }
 
             case "GMScript": {
-                this.resources.set(name, new GameMakerScript(this, path, content as GMScript));
+                this.resources.set(name, await new GameMakerScript(this, content as GMScript).load(path));
                 break;
             }
 
