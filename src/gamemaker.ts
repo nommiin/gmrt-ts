@@ -50,18 +50,18 @@ interface GMIncludedFile extends GMResource {
     filePath: string;
 }
 
-interface GMResourceEntry {
+export interface GMResourceEntry {
     id: {
         name: string;
         path: string;
     }
 }
 
-function GMResourceEntry_factory(name: string, folder: string): GMResourceEntry {
+export function GMResourceEntry_factory(name: string, path: string): GMResourceEntry {
     return {
         id: {
             name,
-            path: `${folder}/${name}/${name}.yy`
+            path: path
         }
     }
 }
@@ -252,7 +252,8 @@ interface GMRBackgroundLayer extends GMRLayer {
     y: number;
 }
 
-function GMRBackgroundLayer_factory(name: string, colour: number = 4278190080): GMRBackgroundLayer {
+function GMRBackgroundLayer_factory(name: string, colour: number = 4294936981): GMRBackgroundLayer {
+    // NOTE: default "colour" argument differs from editor default, more of a cornflower blue
     return {...GMRLayer_factory(name),
         $GMRBackgroundLayer: "",
         animationFPS: 15,
@@ -382,7 +383,7 @@ export function GMRoom_factory(project: string, name: string, width: number = 13
             Width: width
         },
         sequenceId: null,
-        views: new Array(8).map(_ => GMRoomView_factory(width, height)),
+        views: Array.from({length: 8}).map(_ => GMRoomView_factory(width, height)),
         viewSettings: {
             clearDisplayBuffer: true,
             clearViewBackground: true,
@@ -390,5 +391,146 @@ export function GMRoom_factory(project: string, name: string, width: number = 13
             inheritViewSettings: false
         },
         volume: 1
+    }
+}
+
+export interface GMMainOptions extends GMResource {
+    $GMMainOptions: string;
+    option_allow_instance_change: boolean;
+    option_audio_error_behaviour: boolean;
+    option_author: string;
+    option_collision_compatibility: boolean;
+    option_copy_on_write_enabled: boolean;
+    option_draw_colour: number;
+    option_gameguid: string;
+    option_gameid: string;
+    option_game_speed: number;
+    option_legacy_json_parsing: boolean;
+    option_legacy_number_conversion: boolean;
+    option_legacy_other_behaviour: boolean;
+    option_legacy_primitive_drawing: boolean;
+    option_mips_for_3d_textures: boolean;
+    option_remove_unused_assets: boolean;
+    option_sci_usesci: boolean;
+    option_spine_licence: boolean;
+    option_steam_app_id: string;
+    option_template_description: string | null;
+    option_template_icon: string;
+    option_template_image: string;
+    option_window_colour: number;
+}
+
+export function GMMainOptions_factory(author: string = "", game_speed: number = 60, colour: number = 4294967295): GMMainOptions {
+    return {
+        $GMMainOptions: "v5",
+        "%Name": "Main",
+        name: "Main",
+        option_allow_instance_change: false,
+        option_audio_error_behaviour: false,
+        option_author: author,
+        option_collision_compatibility: false,
+        option_copy_on_write_enabled: false,
+        option_draw_colour: colour,
+        option_gameguid: crypto.randomUUID(),
+        option_gameid: "0",
+        option_game_speed: game_speed,
+        option_legacy_json_parsing: false,
+        option_legacy_number_conversion: false,
+        option_legacy_other_behaviour: false,
+        option_legacy_primitive_drawing: false,
+        option_mips_for_3d_textures: false,
+        option_remove_unused_assets: true,
+        option_sci_usesci: false,
+        option_spine_licence: false,
+        option_steam_app_id: "0",
+        option_template_description: null,
+        option_template_icon: "${base_options_dir}/main/template_icon.png",
+        option_template_image: "${base_options_dir}/main/template_image.png",
+        option_window_colour: 255,
+        resourceType: "GMMainOptions",
+        resourceVersion: "2.0"
+    }
+}
+
+export interface GMWindowsOptions extends GMResource {
+    $GMWindowsOptions: string;
+    option_windows_allow_fullscreen_switching: boolean;
+    option_windows_borderless: boolean;
+    option_windows_company_info: string;
+    option_windows_copyright_info: string;
+    option_windows_copy_exe_to_dest: boolean;
+    option_windows_d3dswapeffectdiscard: boolean;
+    option_windows_description_info: string;
+    option_windows_disable_sandbox: boolean;
+    option_windows_display_cursor: boolean;
+    option_windows_display_name: string;
+    option_windows_enable_steam: boolean;
+    option_windows_executable_name: string;
+    option_windows_icon: string;
+    option_windows_installer_finished: string;
+    option_windows_installer_header: string;
+    option_windows_interpolate_pixels: boolean;
+    option_windows_license: string;
+    option_windows_nsis_file: string;
+    option_windows_product_info: string;
+    option_windows_resize_window: boolean;
+    option_windows_save_location: number;
+    option_windows_scale: number;
+    option_windows_sleep_margin: number;
+    option_windows_splash_screen: string;
+    option_windows_start_fullscreen: boolean;
+    option_windows_steam_use_alternative_launcher: boolean;
+    option_windows_texture_page: string;
+    option_windows_use_raw_mouse: boolean;
+    option_windows_use_splash: boolean;
+    option_windows_version: string;
+    option_windows_vsync: boolean;
+}
+
+export function GMWindowsOptions_factory(display_name: string): GMWindowsOptions {
+    /* NOTE: this makes some changes to the default GMWindowsOptions you'd get from the editor
+        option_windows_allow_fullscreen_switching: false -> true
+                  option_windows_description_info: (ADDED) " - Using gmrt-ts"
+                      option_windows_display_name: ${display_name}
+                option_windows_interpolate_pixels: true -> false
+                     option_windows_resize_window: false -> true
+    */
+    return {
+        $GMWindowsOptions: "v2",
+        "%Name": "Windows",
+        name: "Windows",
+        option_windows_allow_fullscreen_switching: true,
+        option_windows_borderless: false,
+        option_windows_company_info: "YoYo Games Ltd",
+        option_windows_copyright_info: "",
+        option_windows_copy_exe_to_dest: false,
+        option_windows_d3dswapeffectdiscard: false,
+        option_windows_description_info: "A GameMaker Game - Using gmrt-ts",
+        option_windows_disable_sandbox: false,
+        option_windows_display_cursor: true,
+        option_windows_display_name: display_name,
+        option_windows_enable_steam: false,
+        option_windows_executable_name: "${project_name}.exe",
+        option_windows_icon: "${base_options_dir}/windows/icons/icon.ico",
+        option_windows_installer_finished: "${base_options_dir}/windows/installer/finished.bmp",
+        option_windows_installer_header: "${base_options_dir}/windows/installer/header.bmp",
+        option_windows_interpolate_pixels: false,
+        option_windows_license: "${base_options_dir}/windows/installer/license.txt",
+        option_windows_nsis_file: "${base_options_dir}/windows/installer/nsis_script.nsi",
+        option_windows_product_info: "${project_name}",
+        option_windows_resize_window: true,
+        option_windows_save_location: 0,
+        option_windows_scale: 0,
+        option_windows_sleep_margin: 10,
+        option_windows_splash_screen: "${base_options_dir}/windows/splash/splash.png",
+        option_windows_start_fullscreen: false,
+        option_windows_steam_use_alternative_launcher: false,
+        option_windows_texture_page: "2048x2048",
+        option_windows_use_raw_mouse: false,
+        option_windows_use_splash: false,
+        option_windows_version: "1.0.0.0",
+        option_windows_vsync: true,
+        resourceType: "GMWindowsOptions",
+        resourceVersion: "2.0"
     }
 }

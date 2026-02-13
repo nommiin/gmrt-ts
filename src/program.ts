@@ -46,6 +46,8 @@ export class Program {
             const project = new GameMakerProject();
 
             await project.load(project_file);
+            
+            await project.save(project_file, true);
 
         } else {
             throw new Error(`could not load project: ${project_file ?? "<none>"}`);
